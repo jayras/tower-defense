@@ -1,8 +1,10 @@
 import pygame
 from game.enemy import Enemy
+from random import randint
 
 class WaveManager:
-    def __init__(self):
+    def __init__(self, particle_group):
+        self.particle_group = particle_group
         self.wave_number = 0
         self.round_number = 0
         self.enemies_per_round = 5
@@ -28,19 +30,23 @@ class WaveManager:
         enemies = []
         for _ in range(self.enemies_per_round):
             # Spawn from random edge
-            side = pygame.time.get_ticks() % 4
-            if side == 0:  # Top
-                x = pygame.time.get_ticks() % self.screen_width
+            side = randint(0, 3)
+            if side == 0:
+                x = randint(0, self.screen_width)
                 y = 0
-            elif side == 1:  # Right
+            elif side == 1:
                 x = self.screen_width
-                y = pygame.time.get_ticks() % self.screen_height
-            elif side == 2:  # Bottom
-                x = pygame.time.get_ticks() % self.screen_width
+                y = randint(0, self.screen_height)
+            elif side == 2:
+                x = randint(0, self.screen_width)
                 y = self.screen_height
-            else:  # Left
+            else:
                 x = 0
-                y = pygame.time.get_ticks() % self.screen_height
-            enemy = Enemy(x, y, self.tower_x, self.tower_y)
+                y = randint(0, self.screen_height)
+            enemy = Enemy(x, y, self.tower_x, self.tower_y, 2, self.particle_group)
+            print("SPAWNING:", id(enemy))
+
             enemies.append(enemy)
+            print("WAVEMANAGER RETURNING:", enemies)
         return enemies
+    
