@@ -1,62 +1,61 @@
 import pygame
 import math
 import random
+from typing import Optional
 from game.projectile import Projectile
+from game.settings import Settings
+from game.targetable import Targetable
 
 class Tower(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, settings: Settings, x: float, y: float):
         super().__init__()
         self.x = x
         self.y = y
+        self.settings = settings
 
         # Visuals
         self.radius = 50
         self.color = (0, 255, 0)
         self.active_projectiles = 0
 
-        # Core stats
-        self.range = 300
-        self.health = 100
+        # Health starts at max
+        self.health = self.settings.get_tower_max_health()
+        self.rect: pygame.Rect = pygame.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
 
-        # Offensive stats (upgradeable)
-        self.damage = 10
-        self.projectile_speed = 8
-        self.crit_chance = 0.0
-        self.crit_damage = 1.5
-        self.pierce = 0
-        self.splash_radius = 0
 
-        # Multishot system (The Tower style)
-        self.multishot_chance = 0.0      # % chance to fire multiple projectiles
-        self.multishot_targets = 1       # how many targets if multishot triggers
+    # ---------------------------------------------------------
+    # Properties
+    # ---------------------------------------------------------
+    @property
+    def max_health(self) -> int:
+        """Max health is dynamic and calculated from settings every time."""
+        return self.settings.get_tower_max_health()
 
+    @property
+    def range(self) -> int:
+        """Range is dynamic and calculated from settings every time."""
+        return self.settings.get_tower_range()
 
     # ---------------------------------------------------------
     # Burst gating logic
     # ---------------------------------------------------------
-    def can_fire(self):
+    def can_fire(self) -> bool:
         return self.active_projectiles == 0
 
 
     # ---------------------------------------------------------
     # Burst-based firing
     # ---------------------------------------------------------
-    def shoot(self, enemies, projectiles):
+    def shoot(self, enemies: pygame.sprite.Group, projectiles: pygame.sprite.Group) -> None:
         if not self.can_fire():
             return
 
-        # -----------------------------------------------------
-        # Step 1: Determine if multishot triggers
-        # -----------------------------------------------------
-        multishot_triggered = random.random() < self.multishot_chance
+        # Determine burst size based on multishot trigger
         burst_size = 1
+        if self.settings.get_multishot_triggered():
+            burst_size = self.settings.get_multishot_targets()
 
-        if multishot_triggered:
-            burst_size = self.multishot_targets
-
-        # -----------------------------------------------------
         # Step 2: Select targets
-        # -----------------------------------------------------
         # Sort enemies by distance
         sorted_enemies = sorted(
             enemies,
@@ -75,21 +74,14 @@ class Tower(pygame.sprite.Sprite):
         # Limit to burst size
         targets = valid_targets[:burst_size]
 
-        # -----------------------------------------------------
         # Step 3: Fire projectiles
-        # -----------------------------------------------------
         for target in targets:
             proj = Projectile(
+                self.settings,
                 self.x,
                 self.y,
                 target,
-                owner=self,
-                damage=self.damage,
-                speed=self.projectile_speed,
-                crit_chance=self.crit_chance,
-                crit_damage=self.crit_damage,
-                pierce=self.pierce,
-                splash_radius=self.splash_radius
+                owner=self
             )
             projectiles.add(proj)
             self.active_projectiles += 1
@@ -97,7 +89,7 @@ class Tower(pygame.sprite.Sprite):
     # ---------------------------------------------------------
     # Called by projectiles when they hit or expire
     # ---------------------------------------------------------
-    def notify_projectile_resolved(self):
+    def notify_projectile_resolved(self) -> None:
         self.active_projectiles -= 1
         if self.active_projectiles < 0:
             self.active_projectiles = 0  # safety
@@ -105,7 +97,7 @@ class Tower(pygame.sprite.Sprite):
     # ---------------------------------------------------------
     # Draw tower + range
     # ---------------------------------------------------------
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface) -> None:
         # Range circle
         pygame.draw.circle(screen, (128, 128, 128), (self.x, self.y), self.range, 1)
 
@@ -118,5 +110,5 @@ class Tower(pygame.sprite.Sprite):
             points.append((px, py))
         pygame.draw.polygon(screen, self.color, points, 1)
 
-    def update(self):
+    def update(self) -> None:
         pass

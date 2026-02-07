@@ -22,7 +22,7 @@ class DeathParticle(pygame.sprite.Sprite):
 
         self.image = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
-        self.rect = self.image.get_rect(center=(self.x, self.y))
+        self.rect = self.image.get_rect(center=(int(self.x), int(self.y)))
 
     def update(self):
         # Move outward
