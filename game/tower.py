@@ -14,7 +14,7 @@ class Tower(pygame.sprite.Sprite):
         self.settings = settings
 
         # Visuals
-        self.radius = 50
+        self.radius = 20
         self.color = (0, 255, 0)
         self.active_projectiles = 0
 
@@ -98,13 +98,18 @@ class Tower(pygame.sprite.Sprite):
     # Draw tower + range
     # ---------------------------------------------------------
     def draw(self, screen: pygame.Surface) -> None:
-        # Range circle
-        pygame.draw.circle(screen, (128, 128, 128), (self.x, self.y), self.range, 1)
+        # Range circle - lighter and fuzzier with multiple semi-transparent circles
+        range_surface = pygame.Surface((self.range * 2 + 10, self.range * 2 + 10), pygame.SRCALPHA)
+        for i in range(3):
+            alpha = 30 - (i * 8)  # Decreasing opacity
+            color = (180, 180, 180, alpha)
+            pygame.draw.circle(range_surface, color, (self.range + 5, self.range + 5), self.range - i, 1)
+        screen.blit(range_surface, (self.x - self.range - 5, self.y - self.range - 5))
 
-        # 12-sided tower
+        # 6-sided tower (hexagon)
         points = []
-        for i in range(12):
-            angle = math.radians(i * 30)
+        for i in range(6):
+            angle = math.radians(i * 60)
             px = self.x + self.radius * math.cos(angle)
             py = self.y + self.radius * math.sin(angle)
             points.append((px, py))
@@ -112,3 +117,4 @@ class Tower(pygame.sprite.Sprite):
 
     def update(self) -> None:
         pass
+    

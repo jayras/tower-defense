@@ -31,7 +31,7 @@ class Projectile(pygame.sprite.Sprite):
 
         self.is_alive: bool = True
 
-        log("PROJECTILE", f"CREATING PROJECTILE: {id(self)} targeting ENEMY: {id(self.target)}")
+        log("PROJECTILE", f"CREATING PROJECTILE targeting ENEMY: {self.target}")
 
     # ---------------------------------------------------------
     # Update movement + collision

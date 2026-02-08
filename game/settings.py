@@ -9,8 +9,17 @@ class GameSettings:
     fullscreen = False
     debug = True
     splash_damage_percent = 0.5
-    # Enemy base stats (static, non-upgradeable)
-    enemy_speed = 2
+    game_speed = 1.0
+    game_speed_step = 0.5
+    game_speed_max = 5.0
+    pixels_per_meter = 5
+    
+    # Tower range upgrade constants
+    tower_range_per_level = 0.5  # meters per upgrade level
+    tower_range_max_level = 79  # max upgrade levels
+    
+    # Enemy spawn constants
+    enemy_spawn_radius = 100  # meters from tower center
 
 # -----------------------------
 #  Core Layer (Hardcoded Defaults)
@@ -25,7 +34,8 @@ class CoreSettings:
     crit_multiplier = 1.5
     projectile_damage = 10.0
     tower_max_health = 100
-    tower_range = 300
+    tower_range = 30  # meters
+
 
 # -----------------------------
 #  In-Run Layer (Temporary)
@@ -204,7 +214,8 @@ class Settings:
         run = self.ingame.tower_range
         perm = self.workshop.tower_range
         rate = self.lab.tower_range_rate
-        return int(((perm + run) * rate) + base)
+        meters = int(((perm + run) * rate) + base)
+        return meters * GameSettings.pixels_per_meter
 
     def get_window_width(self):
         return GameSettings.window_width

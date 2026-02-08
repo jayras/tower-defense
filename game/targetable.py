@@ -13,8 +13,14 @@ class Targetable(ABC):
     y: float
     rect: pygame.Rect
     dead: bool
+    name: str
 
     @abstractmethod
     def take_damage(self, amount: float) -> None:
         """Apply damage to this targetable object."""
         pass
+
+    @abstractmethod
+    def __str__(self):
+        return self.name
+    

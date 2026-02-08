@@ -3,7 +3,7 @@ import math
 import random
 
 class DeathParticle(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x: float, y: float):
         super().__init__()
 
         self.x = x
@@ -24,11 +24,11 @@ class DeathParticle(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
         self.rect = self.image.get_rect(center=(int(self.x), int(self.y)))
 
-    def update(self):
+    def update(self) -> None:
         # Move outward
         self.x += self.dx
         self.y += self.dy
-        self.rect.center = (self.x, self.y)
+        self.rect.center = (int(self.x), int(self.y))
 
         # Shrink or fade
         self.life -= 1

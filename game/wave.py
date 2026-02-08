@@ -1,8 +1,9 @@
 import pygame
 from game.enemy import Enemy
-from random import randint
-from game.settings import Settings
+from random import randint, uniform
+from game.settings import Settings, GameSettings
 from testing import log
+import math
 
 class WaveManager:
     def __init__(self, settings: Settings, particle_group, tower_x: float, tower_y: float):
@@ -32,22 +33,20 @@ class WaveManager:
     def spawn_round(self):
         enemies = pygame.sprite.Group()
         for _ in range(self.enemies_per_round):
-            # Spawn from random edge
-            side = randint(0, 3)
-            if side == 0:
-                x = randint(0, self.screen_width)
-                y = 0
-            elif side == 1:
-                x = self.screen_width
-                y = randint(0, self.screen_height)
-            elif side == 2:
-                x = randint(0, self.screen_width)
-                y = self.screen_height
-            else:
-                x = 0
-                y = randint(0, self.screen_height)
+            # Spawn at 100m radius from tower, random angle
+            spawn_radius_pixels = GameSettings.enemy_spawn_radius * GameSettings.pixels_per_meter
+            angle = uniform(0, 2 * math.pi)
+            
+            # Calculate spawn position
+            x = self.tower_x + spawn_radius_pixels * math.cos(angle)
+            y = self.tower_y + spawn_radius_pixels * math.sin(angle)
+            
+            # Clamp to screen edges if off-screen
+            x = max(0, min(x, self.screen_width))
+            y = max(0, min(y, self.screen_height))
+            
             enemy = Enemy(x, y, self.tower_x, self.tower_y, self.wave_number, self.particle_group)
-            log("WAVE", f"SPAWNING: {id(enemy)}")
+            log("WAVE", f"SPAWNING: {enemy}")
             enemies.add(enemy)
             log("WAVE", f"WAVEMANAGER RETURNING: {enemies}")
         return enemies
