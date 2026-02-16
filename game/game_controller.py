@@ -3,6 +3,7 @@ import pygame
 from game.tower import Tower
 from game.wave import WaveManager
 from game.settings import Settings, GameSettings
+from tests.test_config import test_config
 import testing
 
 
@@ -20,6 +21,11 @@ class GameController:
         self.projectiles = pygame.sprite.Group()
         self.enemy_projectiles = pygame.sprite.Group()
         self.wave_manager = WaveManager(settings, self.particles, center_x, center_y, self.tower.range, self.enemy_projectiles)
+        
+        # Apply test config if enabled
+        if test_config.enabled:
+            if test_config.tower_health is not None:
+                self.tower.health = test_config.tower_health
         
         self.game_over = False
         
@@ -63,8 +69,13 @@ class GameController:
                     ny = (enemy.y - self.tower.y) / dist
                 
                 testing.log("CONTROLLER", f"ENEMY REACHED TOWER: dist={dist}, enemy.damage={enemy.damage}")
-                self.tower.health -= enemy.damage
-                testing.log("CONTROLLER", f"TOWER HEALTH NOW: {self.tower.health}")
+                
+                # Apply test config: invincible tower
+                if not (test_config.enabled and test_config.invincible_tower):
+                    self.tower.health -= enemy.damage
+                    testing.log("CONTROLLER", f"TOWER HEALTH NOW: {self.tower.health}")
+                else:
+                    testing.log("CONTROLLER", "Tower is invincible (test mode)")
                 
                 # Move just outside the tower and push away
                 enemy.x = self.tower.x + nx * (reach_dist + 1)

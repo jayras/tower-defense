@@ -4,6 +4,7 @@ import random
 from typing import Optional
 from game.projectile import Projectile
 from game.settings import Settings
+from tests.test_config import test_config
 from game.targetable import Targetable
 
 class Tower(pygame.sprite.Sprite):
@@ -34,7 +35,13 @@ class Tower(pygame.sprite.Sprite):
     @property
     def range(self) -> int:
         """Range is dynamic and calculated from settings every time."""
-        return self.settings.get_tower_range()
+        base_range = self.settings.get_tower_range()
+        
+        # Apply test config: infinite range
+        if test_config.enabled and test_config.infinite_range:
+            return 999999  # Effectively infinite
+        
+        return base_range
 
     # ---------------------------------------------------------
     # Burst gating logic

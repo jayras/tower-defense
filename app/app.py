@@ -1,7 +1,8 @@
 import pygame
 import sys
 from game.settings import Settings
-from app.scenes import MenuScene
+from app.scenes import MenuScene, GameScene
+from tests.test_config import test_config
 
 
 class GameApp:
@@ -15,7 +16,12 @@ class GameApp:
         self.clock = pygame.time.Clock()
         self.fps = 60
         self.font = pygame.font.SysFont(None, 24)
-        self.scene = MenuScene(self)
+        
+        # Auto-start game if test mode is enabled
+        if test_config.enabled and test_config.auto_start:
+            self.scene = GameScene(self)
+        else:
+            self.scene = MenuScene(self)
 
     def change_scene(self, scene):
         self.scene = scene

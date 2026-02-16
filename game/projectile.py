@@ -3,6 +3,7 @@ import math
 import random
 from typing import Optional
 from game.settings import Settings
+from tests.test_config import test_config
 from testing import log
 from game.targetable import Targetable
 
@@ -74,6 +75,10 @@ class Projectile(pygame.sprite.Sprite):
         
         # Crit calculation
         proj_dmg = self.settings.get_projectile_damage()
+        
+        # Apply test config: one-hit kill
+        if test_config.enabled and test_config.one_hit_kill:
+            proj_dmg = 999999  # Massive damage to one-shot anything
 
         # Splash damage: use the configured splash damage percentage
         splash_radius = self.settings.get_splash_radius()

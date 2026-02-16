@@ -5,6 +5,7 @@ from random import randint, uniform
 from game.settings import Settings, GameSettings
 from game.enemy_stats import EnemyStats
 from game.enemy_type import EnemyType, BasicEnemy, FastEnemy, TankEnemy, RangedEnemy as RangedEnemyType, BossEnemy
+from tests.test_config import test_config
 from testing import log
 import math
 
@@ -18,17 +19,46 @@ class WaveManager:
         self.enemy_projectiles = enemy_projectiles
         self.screen_width = settings.get_window_width()
         self.screen_height = settings.get_window_height()
-        self.wave_number = 1
-        self.round_number = 0
-        self.enemies_per_round = 5
+        
+        # Apply test config for initial wave
+        if test_config.enabled and test_config.initial_wave:
+            self.wave_number = test_config.initial_wave
+            self.round_number = test_config.initial_round if test_config.initial_round else 0
+        else:
+            self.wave_number = 1
+            self.round_number = 0
+        
+        # Apply test config for enemies per round
+        if test_config.enabled and test_config.enemies_per_round is not None:
+            self.enemies_per_round = test_config.enemies_per_round
+        else:
+            self.enemies_per_round = 5
+        
         self.round_timer = 0
-        self.round_delay = 2000  # 2 seconds between rounds
+        
+        # Apply test config for round delay
+        if test_config.enabled and test_config.round_delay is not None:
+            self.round_delay = test_config.round_delay
+        else:
+            self.round_delay = 2000  # 2 seconds between rounds
+        
         self.skip = False
         self.enemy_stats = EnemyStats()
+        
+        # Update enemy stats to match initial wave
+        if self.wave_number > 1:
+            self.enemy_stats.update_attack(self.wave_number)
+            self.enemy_stats.update_health(self.wave_number)
+        
         self.boss_spawned = False
 
     def update(self):
-        self.round_timer += 16  # Approximate for 60 FPS
+        # Apply test config game speed multiplier
+        time_delta = 16  # Base time for 60 FPS
+        if test_config.enabled and test_config.game_speed_multiplier:
+            time_delta = int(time_delta * test_config.game_speed_multiplier)
+        
+        self.round_timer += time_delta
         if self.round_timer >= self.round_delay:
             self.round_timer = 0
             self.round_number += 1
@@ -67,28 +97,32 @@ class WaveManager:
         return enemies
     
     def pick_enemy(self, x, y):
-        # This method can be used to pick a random enemy type based on chance.
-        # For simplicity, we just return a basic type for now
-        pick = randint(1, 100)
-        boss_round = randint(1, 10)
+        # Check if test config forces a specific enemy type
+        if test_config.enabled and test_config.force_enemy_type:
+            enemy_type = test_config.force_enemy_type
+            log("WAVE", f"Test mode: forcing enemy type {enemy_type}")
+        else:
+            # Normal random enemy selection
+            pick = randint(1, 100)
+            boss_round = randint(1, 10)
 
-        if self.wave_number % 10 == 0:
-            if (boss_round == self.round_number and not self.boss_spawned) or \
-            (self.round_number == 10 and not self.boss_spawned):
-                self.boss_spawned = True
-                log("WAVE", f"SPAWNING BOSS ENEMY!")
-                return Enemy(x, y, self.tower_x, self.tower_y,
-                                self.wave_number, BossEnemy(),
-                                self.enemy_stats, self.particle_group)
+            if self.wave_number % 10 == 0:
+                if (boss_round == self.round_number and not self.boss_spawned) or \
+                (self.round_number == 10 and not self.boss_spawned):
+                    self.boss_spawned = True
+                    log("WAVE", f"SPAWNING BOSS ENEMY!")
+                    return Enemy(x, y, self.tower_x, self.tower_y,
+                                    self.wave_number, BossEnemy(),
+                                    self.enemy_stats, self.particle_group)
 
-        cumulative = 0
-        enemy_type = ""
-        for etype, chance in self.chances(self.wave_number).items():
-            cumulative += chance
-            if pick <= cumulative:
-                log("WAVE", f"Picked enemy type: {etype} (roll: {pick} <= {cumulative})")
-                enemy_type = etype
-                break
+            cumulative = 0
+            enemy_type = ""
+            for etype, chance in self.chances(self.wave_number).items():
+                cumulative += chance
+                if pick <= cumulative:
+                    log("WAVE", f"Picked enemy type: {etype} (roll: {pick} <= {cumulative})")
+                    enemy_type = etype
+                    break
 
         enemy_classes = {
             "basic": BasicEnemy,

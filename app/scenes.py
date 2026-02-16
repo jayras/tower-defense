@@ -1,6 +1,7 @@
 import math
 import pygame
 from game.game_controller import GameController
+from tests.test_config import test_config
 import testing
 from game.settings import GameSettings
 
@@ -207,3 +208,29 @@ class GameScene(Scene):
             enemy_attack_text = font.render(f"Enemy ATK: {self.abbreviate_number(sample_enemy.damage)}", True, (255, 150, 100))
             enemy_attack_rect = enemy_attack_text.get_rect(topright=(right_x, enemy_health_rect.bottom + 5))
             screen.blit(enemy_attack_text, enemy_attack_rect)
+        
+        # --- Debug Info Overlay (if test mode enabled) ---
+        if test_config.enabled and test_config.show_debug_info:
+            debug_y = self.app.settings.get_window_height() - 150
+            debug_lines = [
+                "=== DEBUG MODE ===",
+                f"Enemies: {len(enemies)}",
+                f"Projectiles: {len(projectiles)}",
+                f"Enemy Projectiles: {len(enemy_projectiles)}",
+                f"Tower Range: {tower.range}",
+                f"Game Speed: {test_config.game_speed_multiplier}x",
+            ]
+            
+            if test_config.invincible_tower:
+                debug_lines.append("INVINCIBLE TOWER")
+            if test_config.one_hit_kill:
+                debug_lines.append("ONE-HIT KILL")
+            if test_config.infinite_range:
+                debug_lines.append("INFINITE RANGE")
+            if test_config.force_enemy_type:
+                debug_lines.append(f"Force: {test_config.force_enemy_type}")
+            
+            for i, line in enumerate(debug_lines):
+                color = (255, 255, 0) if i == 0 else (200, 200, 200)
+                debug_surf = font.render(line, True, color)
+                screen.blit(debug_surf, (10, debug_y + i * 20))
