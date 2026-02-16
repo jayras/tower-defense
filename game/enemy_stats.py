@@ -1,43 +1,23 @@
 
-class BasicStats:
-    @staticmethod
-    def chance(wave: int) -> float:
-        if wave < 3:
-            return 0.95
-        elif wave < 10:
-            return 0.93
-        elif wave < 20:
-            return 0.89
-        elif wave < 40:
-            return 0.85
-        elif wave < 100:
-            return 0.82
-        else:
-            return 0.74
+class EnemyStats:
+    H0 = 2.155
+    rH = 1.08994
 
-    @staticmethod
-    def health(wave: int) -> float:
-        # Unified exponential curve (Wave 1 → 111+)
-        return 2.826 * (1.0839 ** wave)
+    A0 = 1.069
+    rA = 1.10263
 
-    @staticmethod
-    def attack(wave: int) -> float:
-        # Unified ratio
-        return 0.09 * BasicStats.health(wave)
+    S0 = 0.998
+    rS = 1.00079
 
-    @staticmethod
-    def speed(wave: int) -> float:
-        if wave < 10:
-            return 1.00
-        elif wave < 20:
-            return 1.01
-        elif wave < 40:
-            return 1.02
-        elif wave < 100:
-            return 1.03
-        else:
-            return 1.08
+    def __init__(self):
+        self.health = EnemyStats.H0
+        self.attack = EnemyStats.A0
 
-    @staticmethod
-    def mass(wave: int) -> float:
-        return 1.05
+    def update_health(self, wave: int):
+        self.health += EnemyStats.H0 * (EnemyStats.rH ** (wave - 1) * (EnemyStats.rH - 1))
+
+    def update_attack(self, wave: int):
+        self.attack += EnemyStats.A0 * (EnemyStats.rA ** (wave - 1) * (EnemyStats.rA - 1))
+    
+    def speed(self, wave: int) -> float:
+        return EnemyStats.S0 * (EnemyStats.rS ** (wave))

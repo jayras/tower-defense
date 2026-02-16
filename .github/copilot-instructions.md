@@ -54,3 +54,40 @@ This is a Python-based tower defense game inspired by "The Tower" mobile game, f
 - **UI**: Display tower health; game over when tower health <=0
 
 Current implementation includes basic gameplay: tower shoots homing projectiles at enemies, enemies damage tower on contact, hit reactions, and wave spawning. Reference Pygame documentation for specific API usage.
+
+## Player Scoring and Progression
+- Players earn gold for defeating enemies, which can be used to purchase tower upgrades during the game (not yet implemented).
+- Additionally Players earn tokens for defeating enemies, which can be used to purchase permanent upgrades between games (not yet implemented).
+   - Permanent upgrades raise the floor for the next game, allowing players to progress further in waves and earn more gold and tokens.
+- Randomly during the game players will be presented with a clickable box to give them a few tickets which can be redeemed for unlocks and modules to assist in the game (not yet implemented).
+- Tickets are also earned by daily quests and achievements (not yet implemented).
+- As player progesses through waves, they will encounter different enemy types with varying stats and behaviors, increasing the challenge and rewards.
+- Waves get progressivly harder, with more enemies, stronger enemies, and faster enemies.  Boss waves will be significantly more difficult but will also provide greater rewards.
+- After 200 waves, players will have the option to go to the next "floor" which will be significantly harder but will also provide greater rewards.  This will allow for endless progression and replayability as players strive to reach higher floors and earn more rewards.
+
+## Upgrades and Unlocks
+- Initially playes will only be able to upgrade basic stats of the tower like attack damage, range, health, regen.
+- At certain wave milestones (to be determined), players will unlock new stats and abilities to upgrade like multi-fire, projectile speed, etc.
+- At a milestone (to be determined), playes will unlock the ability to purchase modules which will provide unique effects and abilities to the tower.  Modules will be purchasable with tickets and will have a cost that scales with the power of the module.  Players will be able to equip a limited number of modules at a time, adding a layer of strategy to the game as players decide which modules to equip for each run.
+
+### Attack Upgrades
+
+
+## Enemy Statistics
+- Health, Attack, Speed, Mass.
+- Mass is static and will be used in physics calculations for collision responses, knockback, and other interactions.
+- 
+- Spawn chances will be based on enemy type.  "What to Spawn" will be determined by a weighted random selection based on the current wave and enemy types available.
+- Boss Spawns will be 0% on all waves not equal to 10, and 100% on wave 10.
+- Enemy types are:
+   - **Basic Enemy**: Health 10, Attack 1, Speed 2
+   - **Fast Enemy**: Speed = Basic Enemy Speed * 2.1, other stats are same as basic enemy. (not implemented yet)
+   - **Tank Enemy**: Health = Basic Enemy Health * 5, Speed is Basic Enemy Speed * 0.6 (not implemented yet)
+   - **Ranged Enemy**: Same stats as Basic Enemy, but flies to "Range Ring" and shoots from a distance (not implemented yet)
+   - **Boss Enemy**: Health = Basic Enemy Health * 20, Attack = Basic Enemy Attack, Speed = Basic Enemy Speed * 0.4 (not implemented yet)
+
+   ### Enemy Upgrades
+   - Formulas will return what stats to add for a given wave number.  Higher the wave, the higher the increase.  "Current Stats" will be stored in the wave manager and applied to all enemies spawned in that wave.  This will allow for dynamic difficulty scaling as the player progresses through waves.  This will also allow for a wave skip mechanic where the enemy upgrades will be skipped for a wave remaining "flat" until the next wave. (Other wave skip mechanics will be implemented as well like currency given as if the wave was completed, etc.)
+   - Health Upgrade: (Base Seed) * (Growth Rate) ^ (Wave Number - 1)
+   - Attack Upgrade: (Base Seed) * (Growth Rate) ^ (Wave Number - 1)
+   

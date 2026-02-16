@@ -27,7 +27,6 @@ class Projectile(pygame.sprite.Sprite):
 
         self.image = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
-        self.rect: pygame.Rect = self.image.get_rect(center=(self.x, self.y))
 
         self.is_alive: bool = True
 
@@ -58,13 +57,10 @@ class Projectile(pygame.sprite.Sprite):
         # Move
         self.x += dx * self.settings.get_projectile_speed()
         self.y += dy * self.settings.get_projectile_speed()
-        self.rect.center = (int(self.x), int(self.y))
 
-        # Recalculate distance AFTER movement
-        new_dist = math.hypot(self.target.x - self.x, self.target.y - self.y)
-
-        # Collision check
-        if self.rect.colliderect(self.target.rect):
+        # Collision check (distance-based)
+        collision_dist = self.radius + self.target.radius
+        if math.hypot(self.target.x - self.x, self.target.y - self.y) <= collision_dist:
             self.on_hit(enemies)
             return
 
@@ -104,11 +100,11 @@ class Projectile(pygame.sprite.Sprite):
             return
         self.is_alive = False
         self.owner.notify_projectile_resolved()
-        self.rect.center = (-9999, -9999)
         self.kill()
             
     # ---------------------------------------------------------
     # Draw
     # ---------------------------------------------------------
     def draw(self, screen: pygame.Surface) -> None:
-        screen.blit(self.image, self.rect)
+        rect = self.image.get_rect(center=(int(self.x), int(self.y)))
+        screen.blit(self.image, rect)

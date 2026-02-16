@@ -20,6 +20,9 @@ class GameSettings:
     
     # Enemy spawn constants
     enemy_spawn_radius = 100  # meters from tower center
+    
+    # Collision buffer when enemies reach the tower (pixels)
+    tower_contact_buffer = 3
 
 # -----------------------------
 #  Core Layer (Hardcoded Defaults)
@@ -32,7 +35,7 @@ class CoreSettings:
     pierce = 0
     projectile_speed = 8.0
     crit_multiplier = 1.5
-    projectile_damage = 10.0
+    projectile_damage = 1000.0
     tower_max_health = 100
     tower_range = 30  # meters
 

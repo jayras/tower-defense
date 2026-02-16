@@ -5,34 +5,34 @@ from game.death_particle import DeathParticle
 from game.targetable import Targetable
 from game.settings import GameSettings
 from testing import log
-from game.enemy_stats import BasicStats
+from game.enemy_stats import EnemyStats
 from game.enemy_names import EnemyNames
+from game.enemy_type import EnemyType
 
 
 class Enemy(pygame.sprite.Sprite, Targetable):
-    # Base stats for this enemy type (can be overridden in subclasses)
-    initial_health = 10
-    initial_damage = 5  # Increased from 1 for visible scaling
 
-    def __init__(self, x: float, y: float, target_x: float, target_y: float, wave_number: int, particle_group):
+    def __init__(self, x: float, y: float, target_x: float, target_y: float, wave_number: int, type: EnemyType, stats: EnemyStats, particle_group):
         super().__init__()
-        self.name = EnemyNames.get_name()
+        self.name = f"{EnemyNames.get_name()} ({type.name}): WAVE {wave_number}"
         self.x = x
         self.y = y
         self.particle_group = particle_group
         self.target_x = target_x
         self.target_y = target_y
+        self.type = type  # Store enemy type
         
-        # Health and damage scale with wave number
+        # Health and attack scale with wave number
         self.wave_number = wave_number
-        self.health = BasicStats.health(wave_number)
-        self.damage = BasicStats.attack(wave_number)
+        self.health = stats.health * type.health_multiplier
+        self.attack = stats.attack * type.attack_multiplier
+        self.damage = self.attack  # For now, damage is the same as attack stat, can be modified by enemy type or wave later
         # Base speed by enemy type and wave, scaled by overall game speed.
-        self.speed = BasicStats.speed(wave_number) * GameSettings.game_speed
-        self.mass = BasicStats.mass(wave_number)
+        self.speed = stats.speed(wave_number) * type.speed_multiplier * GameSettings.game_speed
+        self.mass = type.mass
 
-        self.size = 10  # Size of the square
-        self.color = (255, 0, 0)  # Red for enemy
+        self.size = type.size  # Size of the square
+        self.color = type.color  # Color for enemy
         self.radius = self.size / 2
         self.hit_timer = 0  # Timer for hit reaction
         self.dead = False
@@ -42,32 +42,15 @@ class Enemy(pygame.sprite.Sprite, Targetable):
         self.vy = 0.0
         self.rotation = 0.0  # Rotation angle in degrees
         self.angular_velocity = 0.0  # Rotation speed
-        self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-        pygame.draw.rect(self.image, self.color, (0, 0, self.size, self.size), 2)
-        self.rect: pygame.Rect = self.image.get_rect(center=(self.x, self.y))
         log("ENEMY", f"CREATING ENEMY: {self}")
 
     def __str__(self):
         return self.name
 
-
-    # ---------------------------------------------------------
-    # Scaling calculations based on wave number
-    # ---------------------------------------------------------
-    def _calculate_health(self) -> int:
-        """Health scales with wave number."""
-        base_health = self.initial_health
-        # Simple scaling: health increases by 10% per wave
-        scaling_factor = 1.0 + (self.wave_number * 0.1)
-        return int(base_health * scaling_factor)
-
-    def _calculate_damage(self) -> int:
-        """Damage scales with wave number."""
-        base_damage = self.initial_damage
-        # Scaling: damage increases by 20% per wave
-        scaling_factor = 1.0 + (self.wave_number * 0.2)
-        return int(base_damage * scaling_factor)
-
+    @property
+    def center(self):
+        """Current center position as a tuple."""
+        return (int(self.x), int(self.y))
 
     def update(self, enemies=None):
         if self.dead:
@@ -97,7 +80,6 @@ class Enemy(pygame.sprite.Sprite, Targetable):
         if enemies:
             self.handle_collisions(enemies)
         
-        self.rect.center = (int(self.x), int(self.y))
         if self.hit_timer > 0:
             self.hit_timer -= 1
 
@@ -179,10 +161,10 @@ class Enemy(pygame.sprite.Sprite, Targetable):
         
         # Create rotated square
         temp_image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
-        pygame.draw.rect(temp_image, color, (0, 0, self.size, self.size), 1)
+        pygame.draw.rect(temp_image, color, (0, 0, self.size, self.size), 2)
         
         # Rotate the image
         rotated_image = pygame.transform.rotate(temp_image, self.rotation)
-        rotated_rect = rotated_image.get_rect(center=self.rect.center)
+        rotated_rect = rotated_image.get_rect(center=self.center)
         
         screen.blit(rotated_image, rotated_rect)

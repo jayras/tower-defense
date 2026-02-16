@@ -11,7 +11,7 @@ class Targetable(ABC):
     # Required attributes
     x: float
     y: float
-    rect: pygame.Rect
+    radius: float
     dead: bool
     name: str
 
